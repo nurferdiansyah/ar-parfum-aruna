@@ -7,7 +7,23 @@
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7.x/dist/aframe-extras.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-  <script src="https://raw.githack.com/fcor/arjs-gestures/master/dist/gestures.js"></script>
+  
+  <script>
+    // Variabel global untuk mengatur putaran
+    let isRotating = false;
+    let rotationSpeed = 1.5; // Kecepatan awal (derajat per frame)
+
+    // Komponen kustom A-Frame untuk memutar model secara manual
+    AFRAME.registerComponent('putar-otomatis', {
+      tick: function () {
+        if (isRotating) {
+          // Memutar model di sumbu Y (berputar secara horizontal)
+          this.el.object3D.rotation.y += THREE.MathUtils.degToRad(rotationSpeed);
+        }
+      }
+    });
+  </script>
+
   <style>
     .ui-container {
       position: absolute;
@@ -15,19 +31,29 @@
       left: 50%;
       transform: translateX(-50%);
       z-index: 1000;
-      display: none; /* Sembunyikan tombol sebelum marker terdeteksi */
+      display: none; /* Disembunyikan dulu sampai marker terlihat */
+      flex-direction: row;
+      gap: 10px;
     }
-    #btn-simpan {
-      padding: 12px 24px;
-      font-size: 16px;
+    button {
+      padding: 12px 20px;
+      font-size: 15px;
       font-weight: bold;
       border-radius: 25px;
       border: none;
-      background: #007bff;
       color: white;
       box-shadow: 0 4px 8px rgba(0,0,0,0.4);
       cursor: pointer;
       transition: background 0.3s;
+    }
+    #btn-putar {
+      background: #007bff; /* Biru */
+    }
+    #btn-putar.active {
+      background: #dc3545; /* Merah saat berputar */
+    }
+    #btn-kecepatan {
+      background: #28a745; /* Hijau */
     }
   </style>
 </head>
@@ -35,112 +61,88 @@
 
   <!-- UI Tombol -->
   <div class="ui-container" id="ui-container">
-    <button id="btn-simpan">Simpan di Layar</button>
+    <button id="btn-putar">Mulai Putar</button>
+    <button id="btn-kecepatan">Normal</button>
   </div>
 
   <a-scene 
     embedded 
     arjs="sourceType: webcam; debugUIEnabled: false;"
-    renderer="logarithmicDepthBuffer: true;"
-    vr-mode-ui="enabled: false"
-    gesture-detector
-    id="scene">
+    renderer="logarithmicDepthBuffer: true;">
+    
     <a-assets>
       <audio id="musik-bg" src="musik.mp3" preload="auto"></audio>
     </a-assets>
 
-    <!-- smooth="true" ditambahkan agar tidak terlalu bergetar/lebih stabil -->
+    <!-- Marker dengan anti-getar (smooth) -->
     <a-marker preset="hiro" id="marker-utama" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
+      <!-- 
+        Model ditambahkan atribut:
+        1. rotation="-90 0 0" -> Agar model "berdiri" tegak menghadap depan (tampil dari samping, bukan dari atas)
+        2. putar-otomatis -> Komponen khusus yang kita buat di atas untuk menggerakkan rotasi
+      -->
       <a-entity
         id="model-utama"
         gltf-model="nur_ferdiansyah.glb"
         scale="0.3 0.3 0.3"
         position="0 0 0"
-        class="clickable"
-        gesture-handler="minScale: 0.1; maxScale: 2"
+        rotation="-90 0 0"
+        putar-otomatis
         animation-mixer="clip: *; loop: repeat">
       </a-entity>
     </a-marker>
 
-    <!-- Kamera diberikan ID agar model bisa dipindahkan ke sini -->
-    <a-entity camera id="kamera-utama"></a-entity>
+    <a-entity camera></a-entity>
   </a-scene>
 
   <script>
     const marker = document.querySelector('#marker-utama');
     const musik = document.querySelector('#musik-bg');
-    const btnSimpan = document.querySelector('#btn-simpan');
     const uiContainer = document.querySelector('#ui-container');
-    const modelUtama = document.querySelector('#model-utama');
-    const kameraUtama = document.querySelector('#kamera-utama');
+    const btnPutar = document.querySelector('#btn-putar');
+    const btnKecepatan = document.querySelector('#btn-kecepatan');
     
-    let isLocked = false;
-    let markerVisible = false;
+    let speedLevel = 1; // 1: Normal, 2: Cepat, 3: Sangat Cepat
 
-    // Saat marker terlihat oleh kamera
+    // Saat marker terlihat
     marker.addEventListener('markerFound', () => {
-      markerVisible = true;
-      if (!isLocked) {
-        uiContainer.style.display = 'block'; // Tampilkan tombol
-        musik.play().catch(() => {});
-      }
+      uiContainer.style.display = 'flex'; // Tampilkan deretan tombol
+      musik.play().catch(() => {});
     });
 
-    // Saat marker hilang dari kamera
+    // Saat marker hilang
     marker.addEventListener('markerLost', () => {
-      markerVisible = false;
-      if (!isLocked) {
-        uiContainer.style.display = 'none'; // Sembunyikan tombol
-        musik.pause();
+      uiContainer.style.display = 'none'; // Sembunyikan tombol
+      musik.pause();
+    });
+
+    // Logika ketika tombol "Putar" ditekan
+    btnPutar.addEventListener('click', () => {
+      isRotating = !isRotating;
+      
+      if (isRotating) {
+        btnPutar.innerText = 'Berhenti';
+        btnPutar.classList.add('active'); // Ubah jadi merah
+      } else {
+        btnPutar.innerText = 'Mulai Putar';
+        btnPutar.classList.remove('active'); // Kembali biru
       }
     });
 
-    // Logika ketika tombol "Simpan" ditekan
-    btnSimpan.addEventListener('click', () => {
-      if (!isLocked) {
-        // 1. Ambil posisi dan rotasi dunia dari marker saat ini
-        const worldPos = new THREE.Vector3();
-        marker.object3D.getWorldPosition(worldPos);
-        const worldQuat = new THREE.Quaternion();
-        marker.object3D.getWorldQuaternion(worldQuat);
-
-        // 2. KUNCI KE LAYAR: Pindahkan model ke dalam Scene (bukan kamera)
-        const sceneEl = document.querySelector('a-scene');
-        marker.removeChild(modelUtama);
-        sceneEl.appendChild(modelUtama);
-        
-        // 3. Terapkan posisi & rotasi asli ke model agar posisinya persis seperti sebelum diklik
-        modelUtama.object3D.position.copy(worldPos);
-        modelUtama.object3D.quaternion.copy(worldQuat);
-        
-        // 4. Paksa model agar selalu terlihat walaupun markernya hilang
-        modelUtama.setAttribute('visible', 'true');
-        
-        btnSimpan.innerText = 'Lepaskan (Kembali ke Marker)';
-        btnSimpan.style.background = '#dc3545'; // Warna merah
-        isLocked = true;
-      } else {
-        // KEMBALIKAN KE MARKER: Pindahkan model kembali ke marker
-        const sceneEl = document.querySelector('a-scene');
-        sceneEl.removeChild(modelUtama);
-        marker.appendChild(modelUtama);
-        
-        // Reset posisi dan rotasi kembali ke titik nol (mengikuti marker)
-        modelUtama.setAttribute('position', '0 0 0');
-        modelUtama.object3D.rotation.set(0, 0, 0);
-        
-        // Hapus paksaan terlihat, biarkan mengikuti visibilitas marker
-        modelUtama.removeAttribute('visible');
-        
-        btnSimpan.innerText = 'Simpan di Layar';
-        btnSimpan.style.background = '#007bff'; // Warna biru
-        isLocked = false;
-        
-        // Jika saat dilepas ternyata markernya sedang tidak terekam kamera, matikan musik dan sembunyikan UI
-        if (!markerVisible) {
-          uiContainer.style.display = 'none';
-          musik.pause();
-        }
+    // Logika ketika tombol "Kecepatan" ditekan
+    btnKecepatan.addEventListener('click', () => {
+      speedLevel++;
+      if (speedLevel > 3) speedLevel = 1; // Reset ke 1 setelah level 3
+      
+      if (speedLevel === 1) {
+        rotationSpeed = 1.5; // Normal
+        btnKecepatan.innerText = 'Normal';
+      } else if (speedLevel === 2) {
+        rotationSpeed = 4; // Cepat
+        btnKecepatan.innerText = 'Cepat';
+      } else if (speedLevel === 3) {
+        rotationSpeed = 8; // Sangat Cepat
+        btnKecepatan.innerText = 'Super Cepat';
       }
     });
   </script>
