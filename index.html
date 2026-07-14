@@ -85,11 +85,14 @@
     <!-- Marker dengan anti-getar (smooth) -->
     <a-marker preset="hiro" id="marker-utama" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
       <!-- 
-        Kemiringan -70 derajat (HARUS PAKAI MINUS).
-        Fungsinya agar model berdiri menghadap ke kamera, 
-        tapi sedikit menukik dari atas agar pohon tidak menutupi botol.
+        Memutar 180 derajat agar tidak terbalik (tutup botol di bawah).
       -->
-      <a-entity id="tilt-wrapper" rotation="-70 0 0">
+      <a-entity rotation="0 180 0">
+        <!-- 
+          Menidurkan model persis 90 derajat (-90) 
+          agar tampak samping secara penuh saat dilihat dari atas.
+        -->
+        <a-entity id="tilt-wrapper" rotation="-90 0 0">
         <!-- Model utama disesuaikan agar pas di layar -->
         <a-entity 
           id="model-utama" 
@@ -99,6 +102,7 @@
           putar-otomatis=""
           animation-mixer="clip: *; loop: repeat">
         </a-entity>
+      </a-entity>
       </a-entity>
     </a-marker>
 
