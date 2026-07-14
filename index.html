@@ -78,17 +78,20 @@
     <!-- Marker dengan anti-getar (smooth) -->
     <a-marker preset="hiro" id="marker-utama" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
       <!-- 
-        Model dikembalikan ke posisi normal (0 0 0) persis seperti di Gambar 2.
-        Untuk melihat dari samping, cukup turunkan posisi HP kamu saat nge-scan!
+        Kemiringan -70 derajat (HARUS PAKAI MINUS).
+        Fungsinya agar model berdiri menghadap ke kamera, 
+        tapi sedikit menukik dari atas agar pohon tidak menutupi botol.
       -->
-      <a-entity
-        id="model-utama"
-        gltf-model="nur_ferdiansyah.glb"
-        scale="0.6 0.6 0.6"
-        position="0 -0.2 0.2"
-        rotation="0 0 0"
-        putar-otomatis
-        animation-mixer="clip: *; loop: repeat">
+      <a-entity id="tilt-wrapper" rotation="-70 0 0">
+        <!-- Model utama disesuaikan agar pas di layar -->
+        <a-entity
+          id="model-utama"
+          gltf-model="nur_ferdiansyah.glb"
+          scale="0.6 0.6 0.6"
+          position="0 0 0"
+          putar-otomatis
+          animation-mixer="clip: *; loop: repeat">
+        </a-entity>
       </a-entity>
     </a-marker>
 
