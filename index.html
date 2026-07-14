@@ -85,18 +85,19 @@
     <!-- Marker dengan anti-getar (smooth) -->
     <a-marker preset="hiro" id="marker-utama" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
       <!-- 
-        Memutar 180 derajat agar tidak terbalik (tutup botol di bawah).
+        Perbaikan Final:
+        1. rotation="180 0 0": Membalikkan seluruh 3D model 180 derajat. Botol yang tadinya menggantung ke bawah sekarang akan BERDIRI TEGAK. Efek samping yang bagus: Pohon & pilar akan menghadap ke bawah (ke bawah alas marker) sehingga TIDAK AKAN MENGHALANGI botol saat berputar.
+        2. position="0 0.5 0": Mengangkat model sedikit ke atas agar body botol pas di tengah kamera. (Ubah angka 0.5 menjadi lebih besar jika botol masih terlalu bawah).
+        3. scale="0.6 0.6 0.6": Memperbesar ukuran botol agar terlihat dekat.
       -->
-      <a-entity rotation="0 180 0">
-        <!-- 
-          Kemiringan diperbaiki: sebelumnya -25 membuat botol terbalik,
-          sekarang 155 (yaitu -25 + 180) agar botol tegak dengan benar.
-        -->
-        <a-entity id="tilt-wrapper" rotation="155 0 0">
-          <!-- Model utama diperkecil agar tidak terlalu dekat ke kamera -->
-          <a-entity id="model-utama" gltf-model="nur_ferdiansyah.glb" scale="0.3 0.3 0.3" position="0 0 0"
-            putar-otomatis="" animation-mixer="clip: *; loop: repeat">
-          </a-entity>
+      <a-entity id="tilt-wrapper" rotation="180 0 0" position="0 0.5 0">
+        <a-entity 
+          id="model-utama" 
+          gltf-model="nur_ferdiansyah.glb" 
+          scale="0.6 0.6 0.6" 
+          position="0 0 0"
+          putar-otomatis="" 
+          animation-mixer="clip: *; loop: repeat">
         </a-entity>
       </a-entity>
     </a-marker>
