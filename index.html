@@ -10,16 +10,12 @@
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 
   <script>
-    // Variabel global untuk mengatur putaran
     let isRotating = false;
-    let rotationSpeed = 1.5; // Kecepatan awal (derajat per frame)
+    let rotationSpeed = 1.5;
 
-    // Komponen kustom A-Frame untuk memutar model secara manual
     AFRAME.registerComponent('putar-otomatis', {
       tick: function () {
         if (isRotating) {
-          // Memutar model di sumbu Y (karena kemiringan X sudah dipisah ke parent)
-          // Ini menjamin putarannya dari kiri ke kanan (yaw)
           this.el.object3D.rotation.y += THREE.MathUtils.degToRad(rotationSpeed);
         }
       }
@@ -34,7 +30,6 @@
       transform: translateX(-50%);
       z-index: 1000;
       display: none;
-      /* Disembunyikan dulu sampai marker terlihat */
       flex-direction: row;
       gap: 10px;
     }
@@ -53,24 +48,20 @@
 
     #btn-putar {
       background: #007bff;
-      /* Biru */
     }
 
     #btn-putar.active {
       background: #dc3545;
-      /* Merah saat berputar */
     }
 
     #btn-kecepatan {
       background: #28a745;
-      /* Hijau */
     }
   </style>
 </head>
 
 <body style="margin: 0; overflow: hidden;">
 
-  <!-- UI Tombol -->
   <div class="ui-container" id="ui-container">
     <button id="btn-putar">Mulai Putar</button>
     <button id="btn-kecepatan">Normal</button>
@@ -82,27 +73,24 @@
       <audio id="musik-bg" src="musik.mp3" preload="auto"></audio>
     </a-assets>
 
-    <!-- Marker dengan anti-getar (smooth) -->
     <a-marker preset="hiro" id="marker-utama" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
       <!-- 
-        Memutar 180 derajat agar tidak terbalik (tutup botol di bawah).
+        File glb sudah dibersihkan: sekarang cuma berisi Botol_Badan & Botol_Tutup
+        (pilar, pohon, batu, rumput, lantai sudah dihapus dari sumbernya).
+        Rotasi direset ke 0 sebagai titik awal yang bersih, karena botolnya
+        memang sudah berdiri tegak dari sananya tanpa perlu rotasi tambahan.
       -->
-      <a-entity rotation="0 180 0">
-        <!-- 
-          Kemiringan diperbaiki: sebelumnya -25 membuat botol terbalik,
-          sekarang 155 (yaitu -25 + 180) agar botol tegak dengan benar.
-        -->
-        <a-entity id="tilt-wrapper" rotation="155 0 0">
-        <!-- Model utama diperkecil agar tidak terlalu dekat ke kamera -->
-        <a-entity 
-          id="model-utama" 
-          gltf-model="nur_ferdiansyah.glb" 
-          scale="0.3 0.3 0.3" 
-          position="0 0 0" 
-          putar-otomatis=""
-          animation-mixer="clip: *; loop: repeat">
+      <a-entity rotation="0 0 0" position="0 -0.4 0">
+        <a-entity id="tilt-wrapper" rotation="0 0 0">
+          <a-entity 
+            id="model-utama" 
+            gltf-model="nur_ferdiansyah.glb" 
+            scale="0.3 0.3 0.3" 
+            position="0 0 0" 
+            putar-otomatis=""
+            animation-mixer="clip: *; loop: repeat">
+          </a-entity>
         </a-entity>
-      </a-entity>
       </a-entity>
     </a-marker>
 
@@ -116,46 +104,42 @@
     const btnPutar = document.querySelector('#btn-putar');
     const btnKecepatan = document.querySelector('#btn-kecepatan');
 
-    let speedLevel = 1; // 1: Normal, 2: Cepat, 3: Sangat Cepat
+    let speedLevel = 1;
 
-    // Saat marker terlihat
     marker.addEventListener('markerFound', () => {
-      uiContainer.style.display = 'flex'; // Tampilkan deretan tombol
+      uiContainer.style.display = 'flex';
       musik.play().catch(() => { });
     });
 
-    // Saat marker hilang
     marker.addEventListener('markerLost', () => {
-      uiContainer.style.display = 'none'; // Sembunyikan tombol
+      uiContainer.style.display = 'none';
       musik.pause();
     });
 
-    // Logika ketika tombol "Putar" ditekan
     btnPutar.addEventListener('click', () => {
       isRotating = !isRotating;
 
       if (isRotating) {
         btnPutar.innerText = 'Berhenti';
-        btnPutar.classList.add('active'); // Ubah jadi merah
+        btnPutar.classList.add('active');
       } else {
         btnPutar.innerText = 'Mulai Putar';
-        btnPutar.classList.remove('active'); // Kembali biru
+        btnPutar.classList.remove('active');
       }
     });
 
-    // Logika ketika tombol "Kecepatan" ditekan
     btnKecepatan.addEventListener('click', () => {
       speedLevel++;
-      if (speedLevel > 3) speedLevel = 1; // Reset ke 1 setelah level 3
+      if (speedLevel > 3) speedLevel = 1;
 
       if (speedLevel === 1) {
-        rotationSpeed = 1.5; // Normal
+        rotationSpeed = 1.5;
         btnKecepatan.innerText = 'Normal';
       } else if (speedLevel === 2) {
-        rotationSpeed = 4; // Cepat
+        rotationSpeed = 4;
         btnKecepatan.innerText = 'Cepat';
       } else if (speedLevel === 3) {
-        rotationSpeed = 8; // Sangat Cepat
+        rotationSpeed = 8;
         btnKecepatan.innerText = 'Super Cepat';
       }
     });
