@@ -85,18 +85,18 @@
     <!-- Marker dengan anti-getar (smooth) -->
     <a-marker preset="hiro" id="marker-utama" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
       <!-- 
-        Perbaikan Final:
-        1. rotation="180 0 0": Membalikkan seluruh 3D model 180 derajat. Botol yang tadinya menggantung ke bawah sekarang akan BERDIRI TEGAK. Efek samping yang bagus: Pohon & pilar akan menghadap ke bawah (ke bawah alas marker) sehingga TIDAK AKAN MENGHALANGI botol saat berputar.
-        2. position="0 0.5 0": Mengangkat model sedikit ke atas agar body botol pas di tengah kamera. (Ubah angka 0.5 menjadi lebih besar jika botol masih terlalu bawah).
-        3. scale="0.6 0.6 0.6": Memperbesar ukuran botol agar terlihat dekat.
+        PERBAIKAN FINAL:
+        1. Masalahnya: Di file 3D aslinya, botol berbaring di sepanjang sumbu Z, sedangkan pohon di -Z.
+        2. Solusi: rotation="-90 0 0" pada model akan menegakkan botol (ke atas) dan menyembunyikan pohon (ke bawah tanah).
+        3. Animasi Putar: Komponen `putar-otomatis` ditaruh di parent (putar-wrapper) agar model berputar mulus ke kiri-kanan (sumbu Y).
       -->
-      <a-entity id="tilt-wrapper" rotation="180 0 0" position="0 0.5 0">
+      <a-entity id="putar-wrapper" position="0 0.5 0" putar-otomatis="">
         <a-entity 
           id="model-utama" 
           gltf-model="nur_ferdiansyah.glb" 
+          rotation="-90 0 0"
           scale="0.6 0.6 0.6" 
           position="0 0 0"
-          putar-otomatis="" 
           animation-mixer="clip: *; loop: repeat">
         </a-entity>
       </a-entity>
