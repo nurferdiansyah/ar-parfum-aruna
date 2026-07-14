@@ -7,36 +7,125 @@
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7.x/dist/aframe-extras.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+  <script src="https://raw.githack.com/fcor/arjs-gestures/master/dist/gestures.js"></script>
+  <style>
+    .ui-container {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      display: none; /* Sembunyikan tombol sebelum marker terdeteksi */
+    }
+    #btn-simpan {
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 25px;
+      border: none;
+      background: #007bff;
+      color: white;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+  </style>
 </head>
 <body style="margin: 0; overflow: hidden;">
 
-  <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+  <!-- UI Tombol -->
+  <div class="ui-container" id="ui-container">
+    <button id="btn-simpan">Simpan di Layar</button>
+  </div>
+
+  <a-scene 
+    embedded 
+    arjs="sourceType: webcam; debugUIEnabled: false;"
+    renderer="logarithmicDepthBuffer: true;"
+    vr-mode-ui="enabled: false"
+    gesture-detector
+    id="scene">
     <a-assets>
       <audio id="musik-bg" src="musik.mp3" preload="auto"></audio>
     </a-assets>
 
-    <a-marker preset="hiro" id="marker-utama">
+    <!-- smooth="true" ditambahkan agar tidak terlalu bergetar/lebih stabil -->
+    <a-marker preset="hiro" id="marker-utama" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
       <a-entity
-        gltf-model="botol_parfum_aruna.glb"
+        id="model-utama"
+        gltf-model="nur_ferdiansyah.glb"
         scale="0.3 0.3 0.3"
         position="0 0 0"
+        class="clickable"
+        gesture-handler="minScale: 0.1; maxScale: 2"
         animation-mixer="clip: *; loop: repeat">
       </a-entity>
     </a-marker>
 
-    <a-entity camera></a-entity>
+    <!-- Kamera diberikan ID agar model bisa dipindahkan ke sini -->
+    <a-entity camera id="kamera-utama"></a-entity>
   </a-scene>
 
   <script>
     const marker = document.querySelector('#marker-utama');
     const musik = document.querySelector('#musik-bg');
+    const btnSimpan = document.querySelector('#btn-simpan');
+    const uiContainer = document.querySelector('#ui-container');
+    const modelUtama = document.querySelector('#model-utama');
+    const kameraUtama = document.querySelector('#kamera-utama');
+    
+    let isLocked = false;
+    let markerVisible = false;
 
+    // Saat marker terlihat oleh kamera
     marker.addEventListener('markerFound', () => {
-      musik.play().catch(() => {}); // catch biar gak error kalau browser blokir autoplay
+      markerVisible = true;
+      if (!isLocked) {
+        uiContainer.style.display = 'block'; // Tampilkan tombol
+        musik.play().catch(() => {});
+      }
     });
 
+    // Saat marker hilang dari kamera
     marker.addEventListener('markerLost', () => {
-      musik.pause();
+      markerVisible = false;
+      if (!isLocked) {
+        uiContainer.style.display = 'none'; // Sembunyikan tombol
+        musik.pause();
+      }
+    });
+
+    // Logika ketika tombol "Simpan" ditekan
+    btnSimpan.addEventListener('click', () => {
+      if (!isLocked) {
+        // KUNCI KE LAYAR: Pindahkan model dari Marker ke Kamera
+        marker.removeChild(modelUtama);
+        kameraUtama.appendChild(modelUtama);
+        
+        // Atur posisi agar pas berada di depan kamera (z = -3)
+        modelUtama.setAttribute('position', '0 0 -3'); 
+        
+        btnSimpan.innerText = 'Lepaskan (Kembali ke Marker)';
+        btnSimpan.style.background = '#dc3545'; // Warna merah
+        isLocked = true;
+      } else {
+        // KEMBALIKAN KE MARKER: Pindahkan model dari Kamera kembali ke Marker
+        kameraUtama.removeChild(modelUtama);
+        marker.appendChild(modelUtama);
+        
+        // Reset posisi kembali ke titik tengah marker
+        modelUtama.setAttribute('position', '0 0 0');
+        
+        btnSimpan.innerText = 'Simpan di Layar';
+        btnSimpan.style.background = '#007bff'; // Warna biru
+        isLocked = false;
+        
+        // Jika saat dilepas ternyata markernya sedang tidak terekam kamera
+        if (!markerVisible) {
+          uiContainer.style.display = 'none';
+          musik.pause();
+        }
+      }
     });
   </script>
 
