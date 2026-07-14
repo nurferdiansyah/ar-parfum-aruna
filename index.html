@@ -85,20 +85,17 @@
     <!-- Marker dengan anti-getar (smooth) -->
     <a-marker preset="hiro" id="marker-utama" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
       <!-- 
-        PERBAIKAN FINAL:
-        1. Masalahnya: Di file 3D aslinya, botol berbaring di sepanjang sumbu Z, sedangkan pohon di -Z.
-        2. Solusi: rotation="-90 0 0" pada model akan menegakkan botol (ke atas) dan menyembunyikan pohon (ke bawah tanah).
-        3. Animasi Putar: Komponen `putar-otomatis` ditaruh di parent (putar-wrapper) agar model berputar mulus ke kiri-kanan (sumbu Y).
+        Kembali ke posisi normal sesuai model 3D asli Anda.
+        Tidak ada rotasi atau pembungkus yang aneh-aneh.
       -->
-      <a-entity id="putar-wrapper" position="0 0.5 0" putar-otomatis="">
-        <a-entity 
-          id="model-utama" 
-          gltf-model="nur_ferdiansyah.glb" 
-          rotation="-90 0 0"
-          scale="0.6 0.6 0.6" 
-          position="0 0 0"
-          animation-mixer="clip: *; loop: repeat">
-        </a-entity>
+      <a-entity 
+        id="model-utama" 
+        gltf-model="nur_ferdiansyah.glb" 
+        rotation="0 0 0"
+        scale="0.3 0.3 0.3" 
+        position="0 0 0"
+        putar-otomatis=""
+        animation-mixer="clip: *; loop: repeat">
       </a-entity>
     </a-marker>
 
