@@ -79,14 +79,14 @@
     <a-marker preset="hiro" id="marker-utama" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
       <!-- 
         Bungkus (Wrapper) untuk menidurkan model agar tampak dari samping 
-        (Bisa diubah antara 90 atau -90 tergantung hadapan awal botolnya)
+        (Diubah menjadi -90 agar tidak menampilkan bagian bawah)
       -->
-      <a-entity id="tilt-wrapper" rotation="90 0 0">
+      <a-entity id="tilt-wrapper" rotation="-90 0 0">
         <!-- Model utama diperbesar (scale 0.7) agar lebih ter-zoom -->
         <a-entity
           id="model-utama"
           gltf-model="nur_ferdiansyah.glb"
-          scale="0.7 0.7 0.7"
+          scale="0.8 0.8 0.8"
           position="0 0 0"
           putar-otomatis
           animation-mixer="clip: *; loop: repeat">
