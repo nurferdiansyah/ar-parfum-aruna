@@ -17,8 +17,9 @@
     AFRAME.registerComponent('putar-otomatis', {
       tick: function () {
         if (isRotating) {
-          // Memutar model di sumbu Z lokal (yang sekarang mengarah ke atas setelah X diputar -90)
-          this.el.object3D.rotation.z += THREE.MathUtils.degToRad(rotationSpeed);
+          // Memutar model di sumbu Y (karena kemiringan X sudah dipisah ke parent)
+          // Ini menjamin putarannya dari kiri ke kanan (yaw)
+          this.el.object3D.rotation.y += THREE.MathUtils.degToRad(rotationSpeed);
         }
       }
     });
@@ -77,18 +78,19 @@
     <!-- Marker dengan anti-getar (smooth) -->
     <a-marker preset="hiro" id="marker-utama" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
       <!-- 
-        Model ditambahkan atribut:
-        1. rotation="-90 0 0" -> Agar model "berdiri" tegak menghadap depan (tampil dari samping, bukan dari atas)
-        2. putar-otomatis -> Komponen khusus yang kita buat di atas untuk menggerakkan rotasi
+        Bungkus (Wrapper) untuk menidurkan model agar tampak dari samping 
+        (Bisa diubah antara 90 atau -90 tergantung hadapan awal botolnya)
       -->
-      <a-entity
-        id="model-utama"
-        gltf-model="nur_ferdiansyah.glb"
-        scale="0.3 0.3 0.3"
-        position="0 0 0"
-        rotation="-90 0 0"
-        putar-otomatis
-        animation-mixer="clip: *; loop: repeat">
+      <a-entity id="tilt-wrapper" rotation="90 0 0">
+        <!-- Model utama diperbesar (scale 0.7) agar lebih ter-zoom -->
+        <a-entity
+          id="model-utama"
+          gltf-model="nur_ferdiansyah.glb"
+          scale="0.7 0.7 0.7"
+          position="0 0 0"
+          putar-otomatis
+          animation-mixer="clip: *; loop: repeat">
+        </a-entity>
       </a-entity>
     </a-marker>
 
