@@ -85,17 +85,22 @@
     <!-- Marker dengan anti-getar (smooth) -->
     <a-marker preset="hiro" id="marker-utama" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
       <!-- 
-        Kembali ke posisi normal sesuai model 3D asli Anda.
-        Tidak ada rotasi atau pembungkus yang aneh-aneh.
+        PENTING: Karena Anda men-scan marker di LAYAR LAPTOP (yang posisinya tegak/vertikal),
+        maka model yang normal akan terlihat "menonjol ke depan" ke arah muka Anda (jadi terlihat dari atas).
+        Untuk mengakalinya, kita memiringkan modelnya sebesar -60 derajat ke belakang agar seolah berdiri di layar.
+        (Jika Anda memprint marker ini dan menaruhnya mendatar di atas meja, ubah rotasi ini jadi "0 0 0").
       -->
-      <a-entity 
-        id="model-utama" 
-        gltf-model="nur_ferdiansyah.glb" 
-        rotation="0 0 0"
-        scale="0.3 0.3 0.3" 
-        position="0 0 0"
-        putar-otomatis=""
-        animation-mixer="clip: *; loop: repeat">
+      <a-entity id="tilt-wrapper" rotation="-60 0 0">
+        <!-- Pembungkus rotasi (putar-otomatis ditaruh di sini agar tidak dirusak oleh animasi bawaan glb) -->
+        <a-entity id="putar-wrapper" putar-otomatis="">
+          <a-entity 
+            id="model-utama" 
+            gltf-model="nur_ferdiansyah.glb" 
+            scale="0.3 0.3 0.3" 
+            position="0 0 0"
+            animation-mixer="clip: *; loop: repeat">
+          </a-entity>
+        </a-entity>
       </a-entity>
     </a-marker>
 
