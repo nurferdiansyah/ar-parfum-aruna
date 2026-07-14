@@ -98,29 +98,45 @@
     // Logika ketika tombol "Simpan" ditekan
     btnSimpan.addEventListener('click', () => {
       if (!isLocked) {
-        // KUNCI KE LAYAR: Pindahkan model dari Marker ke Kamera
+        // 1. Ambil posisi dan rotasi dunia dari marker saat ini
+        const worldPos = new THREE.Vector3();
+        marker.object3D.getWorldPosition(worldPos);
+        const worldQuat = new THREE.Quaternion();
+        marker.object3D.getWorldQuaternion(worldQuat);
+
+        // 2. KUNCI KE LAYAR: Pindahkan model ke dalam Scene (bukan kamera)
+        const sceneEl = document.querySelector('a-scene');
         marker.removeChild(modelUtama);
-        kameraUtama.appendChild(modelUtama);
+        sceneEl.appendChild(modelUtama);
         
-        // Atur posisi agar pas berada di depan kamera (z = -3)
-        modelUtama.setAttribute('position', '0 0 -3'); 
+        // 3. Terapkan posisi & rotasi asli ke model agar posisinya persis seperti sebelum diklik
+        modelUtama.object3D.position.copy(worldPos);
+        modelUtama.object3D.quaternion.copy(worldQuat);
+        
+        // 4. Paksa model agar selalu terlihat walaupun markernya hilang
+        modelUtama.setAttribute('visible', 'true');
         
         btnSimpan.innerText = 'Lepaskan (Kembali ke Marker)';
         btnSimpan.style.background = '#dc3545'; // Warna merah
         isLocked = true;
       } else {
-        // KEMBALIKAN KE MARKER: Pindahkan model dari Kamera kembali ke Marker
-        kameraUtama.removeChild(modelUtama);
+        // KEMBALIKAN KE MARKER: Pindahkan model kembali ke marker
+        const sceneEl = document.querySelector('a-scene');
+        sceneEl.removeChild(modelUtama);
         marker.appendChild(modelUtama);
         
-        // Reset posisi kembali ke titik tengah marker
+        // Reset posisi dan rotasi kembali ke titik nol (mengikuti marker)
         modelUtama.setAttribute('position', '0 0 0');
+        modelUtama.object3D.rotation.set(0, 0, 0);
+        
+        // Hapus paksaan terlihat, biarkan mengikuti visibilitas marker
+        modelUtama.removeAttribute('visible');
         
         btnSimpan.innerText = 'Simpan di Layar';
         btnSimpan.style.background = '#007bff'; // Warna biru
         isLocked = false;
         
-        // Jika saat dilepas ternyata markernya sedang tidak terekam kamera
+        // Jika saat dilepas ternyata markernya sedang tidak terekam kamera, matikan musik dan sembunyikan UI
         if (!markerVisible) {
           uiContainer.style.display = 'none';
           musik.pause();
