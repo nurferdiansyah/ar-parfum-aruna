@@ -1,84 +1,166 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  <title>project_kapal_kajang</title>
-  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7.0.0/dist/aframe-extras.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
+  <title>AR Parfum Aruna</title>
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7.x/dist/aframe-extras.min.js"></script>
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+
+  <script>
+    // Variabel global untuk mengatur putaran
+    let isRotating = false;
+    let rotationSpeed = 1.5; // Kecepatan awal (derajat per frame)
+
+    // Komponen kustom A-Frame untuk memutar model secara manual
+    AFRAME.registerComponent('putar-otomatis', {
+      tick: function () {
+        if (isRotating) {
+          // Memutar model di sumbu Y (karena kemiringan X sudah dipisah ke parent)
+          // Ini menjamin putarannya dari kiri ke kanan (yaw)
+          this.el.object3D.rotation.y += THREE.MathUtils.degToRad(rotationSpeed);
+        }
+      }
+    });
+  </script>
+
   <style>
-    .marquee-container {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      background: rgba(0, 0, 0, 0.75);
-      z-index: 9999;
-      overflow: hidden;
-      padding: 12px 0;
+    .ui-container {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
       display: none;
+      /* Disembunyikan dulu sampai marker terlihat */
+      flex-direction: row;
+      gap: 10px;
     }
-    .marquee-text {
-      display: inline-block;
-      white-space: nowrap;
-      color: #FFD700;
-      font-family: Arial, sans-serif;
-      font-size: 14px;
+
+    button {
+      padding: 12px 20px;
+      font-size: 15px;
       font-weight: bold;
-      animation: marquee 25s linear infinite;
+      border-radius: 25px;
+      border: none;
+      color: white;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+      cursor: pointer;
+      transition: background 0.3s;
     }
-    @keyframes marquee {
-      0%   { transform: translateX(100vw); }
-      100% { transform: translateX(-100%); }
+
+    #btn-putar {
+      background: #007bff;
+      /* Biru */
+    }
+
+    #btn-putar.active {
+      background: #dc3545;
+      /* Merah saat berputar */
+    }
+
+    #btn-kecepatan {
+      background: #28a745;
+      /* Hijau */
     }
   </style>
 </head>
+
 <body style="margin: 0; overflow: hidden;">
 
-  <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" vr-mode-ui="enabled: false">
+  <!-- UI Tombol -->
+  <div class="ui-container" id="ui-container">
+    <button id="btn-putar">Mulai Putar</button>
+    <button id="btn-kecepatan">Normal</button>
+  </div>
+
+  <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" renderer="logarithmicDepthBuffer: true;">
+
     <a-assets>
       <audio id="musik-bg" src="musik.mp3" preload="auto"></audio>
     </a-assets>
 
-    <a-marker preset="hiro" id="marker-utama" smooth="true" smoothCount="25" smoothTolerance="0.005" smoothThreshold="8">
-      <!-- Parent entity untuk rotasi sudut pandang -->
-      <a-entity rotation="-75 0 0">
-        <a-entity
-          gltf-model="nur_ferdiansyah.glb"
-          scale="0.15 0.15 0.15"
-          position="0 0 0"
+    <!-- Marker dengan anti-getar (smooth) -->
+    <a-marker preset="hiro" id="marker-utama" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
+      <!-- 
+        Memutar 180 derajat agar tidak terbalik (tutup botol di bawah).
+      -->
+      <a-entity rotation="0 180 0">
+        <!-- 
+          Kemiringan diperbaiki: sebelumnya -25 membuat botol terbalik,
+          sekarang 155 (yaitu -25 + 180) agar botol tegak dengan benar.
+        -->
+        <a-entity id="tilt-wrapper" rotation="155 0 0">
+        <!-- Model utama diperkecil agar tidak terlalu dekat ke kamera -->
+        <a-entity 
+          id="model-utama" 
+          gltf-model="nur_ferdiansyah.glb" 
+          scale="0.3 0.3 0.3" 
+          position="0 0 0" 
+          putar-otomatis=""
           animation-mixer="clip: *; loop: repeat">
         </a-entity>
+      </a-entity>
       </a-entity>
     </a-marker>
 
     <a-entity camera></a-entity>
   </a-scene>
 
-  <!-- Teks Berjalan -->
-  <div class="marquee-container" id="marquee">
-    <span class="marquee-text">Perahu Kajang adalah alat transportasi air tradisional legendaris khas Sungai Musi dan Sungai Komering yang telah ada sejak masa Kerajaan Sriwijaya. Perahu ini berfungsi ganda sebagai sarana mobilisasi perdagangan sekaligus rumah apung bagi masyarakat pedalaman Sumatra Selatan. Ciri utamanya terletak pada atap melengkung dari anyaman daun nipah (kajang) yang melindungi penghuninya selama berlayar menembus jalur perdagangan hingga ke Selat Bangka.</span>
-  </div>
-
   <script>
     const marker = document.querySelector('#marker-utama');
     const musik = document.querySelector('#musik-bg');
-    const marquee = document.getElementById('marquee');
+    const uiContainer = document.querySelector('#ui-container');
+    const btnPutar = document.querySelector('#btn-putar');
+    const btnKecepatan = document.querySelector('#btn-kecepatan');
 
+    let speedLevel = 1; // 1: Normal, 2: Cepat, 3: Sangat Cepat
+
+    // Saat marker terlihat
     marker.addEventListener('markerFound', () => {
-      musik.play().catch(() => {});
-      marquee.style.display = 'block';
+      uiContainer.style.display = 'flex'; // Tampilkan deretan tombol
+      musik.play().catch(() => { });
     });
 
+    // Saat marker hilang
     marker.addEventListener('markerLost', () => {
+      uiContainer.style.display = 'none'; // Sembunyikan tombol
       musik.pause();
-      marquee.style.display = 'none';
+    });
+
+    // Logika ketika tombol "Putar" ditekan
+    btnPutar.addEventListener('click', () => {
+      isRotating = !isRotating;
+
+      if (isRotating) {
+        btnPutar.innerText = 'Berhenti';
+        btnPutar.classList.add('active'); // Ubah jadi merah
+      } else {
+        btnPutar.innerText = 'Mulai Putar';
+        btnPutar.classList.remove('active'); // Kembali biru
+      }
+    });
+
+    // Logika ketika tombol "Kecepatan" ditekan
+    btnKecepatan.addEventListener('click', () => {
+      speedLevel++;
+      if (speedLevel > 3) speedLevel = 1; // Reset ke 1 setelah level 3
+
+      if (speedLevel === 1) {
+        rotationSpeed = 1.5; // Normal
+        btnKecepatan.innerText = 'Normal';
+      } else if (speedLevel === 2) {
+        rotationSpeed = 4; // Cepat
+        btnKecepatan.innerText = 'Cepat';
+      } else if (speedLevel === 3) {
+        rotationSpeed = 8; // Sangat Cepat
+        btnKecepatan.innerText = 'Super Cepat';
+      }
     });
   </script>
 
 </body>
+
 </html>
