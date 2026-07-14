@@ -17,8 +17,8 @@
     AFRAME.registerComponent('putar-otomatis', {
       tick: function () {
         if (isRotating) {
-          // Memutar model di sumbu Y (berputar secara horizontal)
-          this.el.object3D.rotation.y += THREE.MathUtils.degToRad(rotationSpeed);
+          // Memutar model di sumbu Z lokal (yang sekarang mengarah ke atas setelah X diputar -90)
+          this.el.object3D.rotation.z += THREE.MathUtils.degToRad(rotationSpeed);
         }
       }
     });
