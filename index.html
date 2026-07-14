@@ -87,18 +87,17 @@
       <!-- 
         Memutar 180 derajat agar tidak terbalik (tutup botol di bawah).
       -->
-      <a-entity rotation="0 0 0">
+      <a-entity rotation="0 180 0">
         <!-- 
-          Kemiringan ringan (-25 derajat) agar botol terlihat sedikit dari atas,
-          persis seperti sudut pandang pada gambar referensi.
-          Botol tetap berdiri tegak, tidak rebah.
+          Kemiringan diperbaiki: sebelumnya -25 membuat botol terbalik,
+          sekarang 155 (yaitu -25 + 180) agar botol tegak dengan benar.
         -->
-        <a-entity id="tilt-wrapper" rotation="-45 0 0">
-        <!-- Model utama disesuaikan agar pas di layar -->
+        <a-entity id="tilt-wrapper" rotation="155 0 0">
+        <!-- Model utama diperkecil agar tidak terlalu dekat ke kamera -->
         <a-entity 
           id="model-utama" 
           gltf-model="nur_ferdiansyah.glb" 
-          scale="0.6 0.6 0.6" 
+          scale="0.3 0.3 0.3" 
           position="0 0 0" 
           putar-otomatis=""
           animation-mixer="clip: *; loop: repeat">
