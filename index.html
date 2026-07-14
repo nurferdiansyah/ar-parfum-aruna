@@ -86,14 +86,15 @@
     <a-marker preset="hiro" id="marker-utama" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
       <!-- 
         Memutar 180 derajat agar tidak terbalik (tutup botol di bawah).
+        Ditambahkan position Y negatif agar model turun dan pas di tengah layar
+        (sebelumnya tutup botol terpotong di atas).
       -->
-      <a-entity rotation="0 180 0">
+      <a-entity rotation="0 180 0" position="0 -0.4 0">
         <!-- 
-          Kemiringan diperbaiki: sebelumnya -25 membuat botol terbalik,
-          sekarang 155 (yaitu -25 + 180) agar botol tegak dengan benar.
+          Kemiringan diperbaiki: 155 agar botol tegak dengan benar (tidak terbalik).
         -->
         <a-entity id="tilt-wrapper" rotation="155 0 0">
-        <!-- Model utama diperkecil agar tidak terlalu dekat ke kamera -->
+        <!-- Model utama -->
         <a-entity 
           id="model-utama" 
           gltf-model="nur_ferdiansyah.glb" 
@@ -125,42 +126,3 @@
     });
 
     // Saat marker hilang
-    marker.addEventListener('markerLost', () => {
-      uiContainer.style.display = 'none'; // Sembunyikan tombol
-      musik.pause();
-    });
-
-    // Logika ketika tombol "Putar" ditekan
-    btnPutar.addEventListener('click', () => {
-      isRotating = !isRotating;
-
-      if (isRotating) {
-        btnPutar.innerText = 'Berhenti';
-        btnPutar.classList.add('active'); // Ubah jadi merah
-      } else {
-        btnPutar.innerText = 'Mulai Putar';
-        btnPutar.classList.remove('active'); // Kembali biru
-      }
-    });
-
-    // Logika ketika tombol "Kecepatan" ditekan
-    btnKecepatan.addEventListener('click', () => {
-      speedLevel++;
-      if (speedLevel > 3) speedLevel = 1; // Reset ke 1 setelah level 3
-
-      if (speedLevel === 1) {
-        rotationSpeed = 1.5; // Normal
-        btnKecepatan.innerText = 'Normal';
-      } else if (speedLevel === 2) {
-        rotationSpeed = 4; // Cepat
-        btnKecepatan.innerText = 'Cepat';
-      } else if (speedLevel === 3) {
-        rotationSpeed = 8; // Sangat Cepat
-        btnKecepatan.innerText = 'Super Cepat';
-      }
-    });
-  </script>
-
-</body>
-
-</html>
