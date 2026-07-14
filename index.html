@@ -1,95 +1,57 @@
 <!DOCTYPE html>
 <html>
-
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-  <title>AR Parfum Aruna</title>
-  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7.x/dist/aframe-extras.min.js"></script>
-  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-
-  <script>
-    let isRotating = false;
-    let rotationSpeed = 1.5;
-
-    AFRAME.registerComponent('putar-otomatis', {
-      tick: function () {
-        if (isRotating) {
-          this.el.object3D.rotation.y += THREE.MathUtils.degToRad(rotationSpeed);
-        }
-      }
-    });
-  </script>
-
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>project_kapal_kajang</title>
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/aframe-extras@7.0.0/dist/aframe-extras.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
   <style>
-    .ui-container {
-      position: absolute;
-      bottom: 30px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 1000;
+    .marquee-container {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.75);
+      z-index: 9999;
+      overflow: hidden;
+      padding: 12px 0;
       display: none;
-      flex-direction: row;
-      gap: 10px;
     }
-
-    button {
-      padding: 12px 20px;
-      font-size: 15px;
+    .marquee-text {
+      display: inline-block;
+      white-space: nowrap;
+      color: #FFD700;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
       font-weight: bold;
-      border-radius: 25px;
-      border: none;
-      color: white;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-      cursor: pointer;
-      transition: background 0.3s;
+      animation: marquee 25s linear infinite;
     }
-
-    #btn-putar {
-      background: #007bff;
-    }
-
-    #btn-putar.active {
-      background: #dc3545;
-    }
-
-    #btn-kecepatan {
-      background: #28a745;
+    @keyframes marquee {
+      0%   { transform: translateX(100vw); }
+      100% { transform: translateX(-100%); }
     }
   </style>
 </head>
-
 <body style="margin: 0; overflow: hidden;">
 
-  <div class="ui-container" id="ui-container">
-    <button id="btn-putar">Mulai Putar</button>
-    <button id="btn-kecepatan">Normal</button>
-  </div>
-
-  <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" renderer="logarithmicDepthBuffer: true;">
-
+  <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" vr-mode-ui="enabled: false">
     <a-assets>
       <audio id="musik-bg" src="musik.mp3" preload="auto"></audio>
     </a-assets>
 
-    <a-marker preset="hiro" id="marker-utama" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
-      <!-- 
-        File glb sudah dibersihkan: sekarang cuma berisi Botol_Badan & Botol_Tutup
-        (pilar, pohon, batu, rumput, lantai sudah dihapus dari sumbernya).
-        Rotasi direset ke 0 sebagai titik awal yang bersih, karena botolnya
-        memang sudah berdiri tegak dari sananya tanpa perlu rotasi tambahan.
-      -->
-      <a-entity rotation="0 0 0" position="0 0 0">
-        <a-entity id="tilt-wrapper" rotation="0 0 0">
-          <a-entity 
-            id="model-utama" 
-            gltf-model="nur_ferdiansyah.glb" 
-            scale="0.6 0.6 0.6" 
-            position="0 0 0" 
-            putar-otomatis=""
-            animation-mixer="clip: *; loop: repeat">
-          </a-entity>
+    <a-marker preset="hiro" id="marker-utama" smooth="true" smoothCount="25" smoothTolerance="0.005" smoothThreshold="8">
+      <!-- Parent entity untuk rotasi sudut pandang -->
+      <a-entity rotation="-75 0 0">
+        <a-entity
+          gltf-model="nur_ferdiansyah.glb"
+          scale="0.15 0.15 0.15"
+          position="0 0 0"
+          animation-mixer="clip: *; loop: repeat">
         </a-entity>
       </a-entity>
     </a-marker>
@@ -97,54 +59,26 @@
     <a-entity camera></a-entity>
   </a-scene>
 
+  <!-- Teks Berjalan -->
+  <div class="marquee-container" id="marquee">
+    <span class="marquee-text">Perahu Kajang adalah alat transportasi air tradisional legendaris khas Sungai Musi dan Sungai Komering yang telah ada sejak masa Kerajaan Sriwijaya. Perahu ini berfungsi ganda sebagai sarana mobilisasi perdagangan sekaligus rumah apung bagi masyarakat pedalaman Sumatra Selatan. Ciri utamanya terletak pada atap melengkung dari anyaman daun nipah (kajang) yang melindungi penghuninya selama berlayar menembus jalur perdagangan hingga ke Selat Bangka.</span>
+  </div>
+
   <script>
     const marker = document.querySelector('#marker-utama');
     const musik = document.querySelector('#musik-bg');
-    const uiContainer = document.querySelector('#ui-container');
-    const btnPutar = document.querySelector('#btn-putar');
-    const btnKecepatan = document.querySelector('#btn-kecepatan');
-
-    let speedLevel = 1;
+    const marquee = document.getElementById('marquee');
 
     marker.addEventListener('markerFound', () => {
-      uiContainer.style.display = 'flex';
-      musik.play().catch(() => { });
+      musik.play().catch(() => {});
+      marquee.style.display = 'block';
     });
 
     marker.addEventListener('markerLost', () => {
-      uiContainer.style.display = 'none';
       musik.pause();
-    });
-
-    btnPutar.addEventListener('click', () => {
-      isRotating = !isRotating;
-
-      if (isRotating) {
-        btnPutar.innerText = 'Berhenti';
-        btnPutar.classList.add('active');
-      } else {
-        btnPutar.innerText = 'Mulai Putar';
-        btnPutar.classList.remove('active');
-      }
-    });
-
-    btnKecepatan.addEventListener('click', () => {
-      speedLevel++;
-      if (speedLevel > 3) speedLevel = 1;
-
-      if (speedLevel === 1) {
-        rotationSpeed = 1.5;
-        btnKecepatan.innerText = 'Normal';
-      } else if (speedLevel === 2) {
-        rotationSpeed = 4;
-        btnKecepatan.innerText = 'Cepat';
-      } else if (speedLevel === 3) {
-        rotationSpeed = 8;
-        btnKecepatan.innerText = 'Super Cepat';
-      }
+      marquee.style.display = 'none';
     });
   </script>
 
 </body>
-
 </html>
